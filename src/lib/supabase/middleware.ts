@@ -52,38 +52,47 @@ export async function updateSession(request: NextRequest) {
             .eq('id', user.id)
             .single();
 
+        // If no profile exists yet, let them through to create one or use default
+        if (!profile) {
+            // Allow access to any page for now, or redirect to a setup page
+            if (request.nextUrl.pathname === '/login') {
+                const url = request.nextUrl.clone();
+                url.pathname = '/student/today'; // Default to student
+                return NextResponse.redirect(url);
+            }
+            return supabaseResponse;
+        }
+
         const isAdminRoute = request.nextUrl.pathname.startsWith('/admin');
         const isStudentRoute = request.nextUrl.pathname.startsWith('/student');
 
         // Redirect based on role
-        if (profile) {
-            // Admin trying to access student routes
-            if (isStudentRoute && profile.role === 'admin') {
-                const url = request.nextUrl.clone();
-                url.pathname = '/admin/dashboard';
-                return NextResponse.redirect(url);
-            }
+        // Admin trying to access student routes
+        if (isStudentRoute && profile.role === 'admin') {
+            const url = request.nextUrl.clone();
+            url.pathname = '/admin/dashboard';
+            return NextResponse.redirect(url);
+        }
 
-            // Student trying to access admin routes
-            if (isAdminRoute && profile.role === 'student') {
-                const url = request.nextUrl.clone();
-                url.pathname = '/student/today';
-                return NextResponse.redirect(url);
-            }
+        // Student trying to access admin routes
+        if (isAdminRoute && profile.role === 'student') {
+            const url = request.nextUrl.clone();
+            url.pathname = '/student/today';
+            return NextResponse.redirect(url);
+        }
 
-            // Redirect authenticated users from login to dashboard
-            if (request.nextUrl.pathname === '/login') {
-                const url = request.nextUrl.clone();
-                url.pathname = profile.role === 'admin' ? '/admin/dashboard' : '/student/today';
-                return NextResponse.redirect(url);
-            }
+        // Redirect authenticated users from login to dashboard
+        if (request.nextUrl.pathname === '/login') {
+            const url = request.nextUrl.clone();
+            url.pathname = profile.role === 'admin' ? '/admin/dashboard' : '/student/today';
+            return NextResponse.redirect(url);
+        }
 
-            // Redirect root to appropriate dashboard
-            if (request.nextUrl.pathname === '/') {
-                const url = request.nextUrl.clone();
-                url.pathname = profile.role === 'admin' ? '/admin/dashboard' : '/student/today';
-                return NextResponse.redirect(url);
-            }
+        // Redirect root to appropriate dashboard
+        if (request.nextUrl.pathname === '/') {
+            const url = request.nextUrl.clone();
+            url.pathname = profile.role === 'admin' ? '/admin/dashboard' : '/student/today';
+            return NextResponse.redirect(url);
         }
     }
 
