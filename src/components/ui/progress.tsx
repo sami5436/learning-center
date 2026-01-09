@@ -8,10 +8,11 @@ interface ProgressProps {
     variant?: 'primary' | 'secondary' | 'success' | 'warning' | 'accent';
     showLabel?: boolean;
     label?: string;
+    className?: string;
 }
 
 const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
-    ({ value, max = 100, size = 'md', variant = 'primary', showLabel = false, label }, ref) => {
+    ({ value, max = 100, size = 'md', variant = 'primary', showLabel = false, label, className }, ref) => {
         const percentage = Math.min(Math.max((value / max) * 100, 0), 100);
 
         const sizes = {
@@ -29,7 +30,7 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
         };
 
         return (
-            <div ref={ref} className="w-full">
+            <div ref={ref} className={cn("w-full", className)}>
                 {(showLabel || label) && (
                     <div className="flex justify-between items-center mb-1.5">
                         {label && <span className="text-sm font-medium text-foreground">{label}</span>}
